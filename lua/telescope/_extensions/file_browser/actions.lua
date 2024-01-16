@@ -37,6 +37,7 @@ local action_utils = require "telescope.actions.utils"
 local action_set = require "telescope.actions.set"
 local config = require "telescope.config"
 local transform_mod = require("telescope.actions.mt").transform_mod
+local will_rename = require "lsp-file-operations.will-rename"
 
 local Path = require "plenary.path"
 local popup = require "plenary.popup"
@@ -353,7 +354,14 @@ fb_actions.move = function(prompt_bufnr)
       table.insert(skipped, basename)
     else
       local dest_path_abs = dest_path:absolute()
-      selection:rename { new_name = dest_path_abs }
+      local data = {
+        old_name = src_path_abs,
+        new_name = dest_path_abs,
+      }
+      will_rename.callback(data)
+      selection:rename {
+        new_name = dest_path_abs,
+      }
       if not selection:is_dir() then
         fb_utils.rename_buf(src_path_abs, dest_path_abs)
       else
