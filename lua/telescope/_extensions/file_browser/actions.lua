@@ -308,6 +308,11 @@ fb_actions.rename = function(prompt_bufnr)
       -- rename changes old_name in place
       local old_name = old_path:absolute()
 
+      local data = {
+        old_name = old_path:absolute(),
+        new_name = new_path:absolute(),
+      }
+      will_rename.callback(data)
       old_path:rename { new_name = new_path.filename }
       if not new_path:is_dir() then
         fb_utils.rename_buf(old_name, new_path:absolute())
