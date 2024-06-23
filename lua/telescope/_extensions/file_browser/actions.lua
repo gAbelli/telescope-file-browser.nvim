@@ -619,6 +619,15 @@ fb_actions.goto_parent_dir = function(prompt_bufnr, bypass)
   local current_picker = action_state.get_current_picker(prompt_bufnr)
   local finder = current_picker.finder
   local parent_dir = Path:new(finder.path):parent():absolute()
+  while true do
+    local dirs = scan.scan_dir(parent_dir, { add_dirs = true, depth = 1, hidden = true })
+    if #dirs == 1 and vim.fn.isdirectory(dirs[1]) == 1 then
+      local grandparent_dir = Path:new(parent_dir):parent():absolute()
+      parent_dir = grandparent_dir
+    else
+      break
+    end
+  end
   local current_dir = finder.path
 
   if not bypass then
