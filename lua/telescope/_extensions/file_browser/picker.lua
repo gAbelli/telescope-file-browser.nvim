@@ -101,6 +101,7 @@ fb_picker.file_browser = function(opts)
   opts.git_status = vim.F.if_nil(opts.git_status, vim.fn.executable "git" == 1)
   opts.prompt_path = vim.F.if_nil(opts.prompt_path, false)
   opts.create_from_prompt = vim.F.if_nil(opts.create_from_prompt, true)
+  opts.collapse_dirs = vim.F.if_nil(opts.collapse_dirs, false)
 
   local select_buffer = opts.select_buffer and opts.files
   -- handle case that current buffer is a hidden file

@@ -7,6 +7,7 @@ local fb_make_entry_utils = require "telescope._extensions.file_browser.make_ent
 local fs_stat = require "telescope._extensions.file_browser.fs_stat"
 local log = require "telescope.log"
 local os_sep = Path.path.sep
+local scan = require "plenary.scandir"
 local state = require "telescope.state"
 local strings = require "plenary.strings"
 local utils = require "telescope.utils"
@@ -131,8 +132,12 @@ local make_entry = function(opts)
     if entry.is_dir then
       if entry.path == parent_dir then
         path_display = ".."
+      elseif opts.collapse_dirs then
+        local collapsed_path = fb_utils.collapse_paths(entry.path)
+        path_display = utils.transform_path(opts, collapsed_path) .. os_sep
+      else
+        path_display = path_display .. os_sep
       end
-      path_display = path_display .. os_sep
     end
 
     if not opts.disable_devicons then

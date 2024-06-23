@@ -5,6 +5,7 @@ local utils = require "telescope.utils"
 
 local Job = require "plenary.job"
 local Path = require "plenary.path"
+local scan = require "plenary.scandir"
 local os_sep = Path.path.sep
 local truncate = require("plenary.strings").truncate
 
@@ -256,6 +257,20 @@ fb_utils.job = function(command, args, cwd)
     error(table.concat(err, ""))
   end
   return results
+end
+
+---@param path string
+fb_utils.collapse_paths = function(path)
+  local collapsed_path = vim.loop.fs_realpath(path) or ""
+  while true do
+    local dirs = scan.scan_dir(collapsed_path, { add_dirs = true, depth = 1, hidden = true })
+    if #dirs == 1 and vim.fn.isdirectory(dirs[1]) == 1 then
+      collapsed_path = dirs[1]
+    else
+      break
+    end
+  end
+  return collapsed_path
 end
 
 return fb_utils
