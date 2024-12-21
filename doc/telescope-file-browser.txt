@@ -416,6 +416,16 @@ fb_actions.backspace()            *telescope-file-browser.actions.backspace()*
 
 
 
+fb_actions.open_dir({prompt_bufnr}, {_}, {dir}) *telescope-file-browser.actions.open_dir()*
+    comment open directory and refresh picker
+
+
+    Parameters: ~
+        {prompt_bufnr} (integer)
+        {_}            (any)      select type
+        {dir}          (string)   ? priority dir path
+
+
 
 ================================================================================
 FINDERS                                         *telescope-file-browser.finders*
