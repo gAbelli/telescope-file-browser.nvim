@@ -156,6 +156,7 @@ fb_finders.browse_folders = function(opts)
       hidden = hidden_opts(opts),
       only_dirs = true,
       respect_gitignore = opts.respect_gitignore,
+      depth = opts.depth,
     })
     table.insert(data, 1, cwd)
     return finders.new_table { results = data, entry_maker = entry_maker }
