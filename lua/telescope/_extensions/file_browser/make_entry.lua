@@ -7,6 +7,7 @@ local fb_make_entry_utils = require "telescope._extensions.file_browser.make_ent
 local fs_stat = require "telescope._extensions.file_browser.fs_stat"
 local log = require "telescope.log"
 local os_sep = Path.path.sep
+local scan = require "plenary.scandir"
 local state = require "telescope.state"
 local strings = require "plenary.strings"
 local utils = require "telescope.utils"
@@ -78,6 +79,52 @@ local function compute_file_width(status, opts)
   return total_file_width
 end
 
+--- Computes the collapsed display path for a directory when collapse_dirs is enabled
+--- Returns the full nested path (e.g., "src/main/java") for directories that only contain single subdirectories
+---@param entry_path string: absolute path to the directory
+---@param cwd string: current working directory for the file browser
+---@param collapse_dirs boolean: whether collapse_dirs is enabled
+---@return string: the collapsed relative path to display
+local function get_collapsed_display_path(entry_path, cwd, collapse_dirs)
+  if not collapse_dirs then
+    return nil
+  end
+
+  local path = Path:new(entry_path)
+  if not path:is_dir() then
+    return nil
+  end
+
+  -- Start building the display path with the base directory name
+  local base_name = path:make_relative(cwd)
+  local display_parts = { base_name }
+  local current_path = entry_path
+
+  -- Recursively check subdirectories
+  while true do
+    local ok, dirs = pcall(scan.scan_dir, current_path, { add_dirs = true, depth = 1, hidden = true })
+    if not ok or not dirs or #dirs ~= 1 then
+      break
+    end
+
+    if vim.fn.isdirectory(dirs[1]) == 1 then
+      -- Get just the directory name (not full path)
+      local subdir_name = vim.fs.basename(dirs[1])
+      table.insert(display_parts, subdir_name)
+      current_path = dirs[1]
+    else
+      break
+    end
+  end
+
+  -- If we found nested directories, return the collapsed path
+  if #display_parts > 1 then
+    return table.concat(display_parts, os_sep)
+  end
+
+  return nil
+end
+
 -- General:
 -- telescope-file-browser unlike telescope
 -- caches "made" entries to retain multi-selections
@@ -131,6 +178,12 @@ local make_entry = function(opts)
     if entry.is_dir then
       if entry.path == parent_dir then
         path_display = ".."
+      else
+        -- Use collapsed path if collapse_dirs is enabled
+        local collapsed_path = get_collapsed_display_path(entry.path, opts.cwd, opts.collapse_dirs)
+        if collapsed_path then
+          path_display = collapsed_path
+        end
       end
       path_display = path_display .. os_sep
     end
